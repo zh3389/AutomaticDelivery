@@ -18,7 +18,7 @@ def sms_txt(config,param):
     password = config['password']
     #验证码
     tokenYZM = config['tokenYZM']
-    templateid = config['templateid'] 
+    templateid = config['templateid']
     #参数
     param = param
 

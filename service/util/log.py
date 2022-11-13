@@ -5,7 +5,7 @@ import time
 
 # def get_cur_info():
 #     return sys._getframe().f_code.co_filename + ' 第' + str(sys._getframe().f_lineno)+'行'
-# 获取具体路径位置 
+# 获取具体路径位置
 # get_cur_info()
 
 

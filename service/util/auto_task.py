@@ -13,4 +13,4 @@ def clean_tmp_order():
                 if (c_now - i.to_date()['updatetime']).days > 5:
                     # del_list.append(i)
                     db.session.delete(i)
-        
+

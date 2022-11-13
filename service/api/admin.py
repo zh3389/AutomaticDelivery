@@ -51,7 +51,7 @@ def timefn(fn):
 def login_record():
     with db.auto_commit_db():
         db.session.add(AdminLog(ip=request.remote_addr))
-    
+
 
 @admin.route('/login', methods=['POST'])
 @limiter.limit("10/minute;20/hour;40/day", override_defaults=False)
@@ -133,7 +133,7 @@ def dashboard():
     # # 历史数据获取
     orders = Order.query.filter(Order.updatetime >= NOW - timedelta(days=7)).all()
     info['history_date'],info['history_price'] = sort_count([(x.updatetime.strftime('%Y-%m-%d'),x.total_price) for x in orders])
-    return jsonify(info)    
+    return jsonify(info)
 
 def sort_count(temp):
     # temp = [('2021-04-26', 0.9), ('2021-04-26', 1.97), ('2021-04-26', 0.9), ('2021-04-27', 1.9)]
@@ -146,7 +146,7 @@ def sort_count(temp):
             continue
         price[-1] += v[1]
 
-    return date,price    
+    return date,price
 
 
 @admin.route('/incom_count', methods=['get'])
@@ -154,12 +154,12 @@ def sort_count(temp):
 def incom_count():
     id = request.args.get('id',None)
     if not id:
-        return '参数丢失', 400 
+        return '参数丢失', 400
     # if name not in ['1','2','3','4','5']: # 天、周、月、年、全部
     try:
         id = int(id)
         if id not in [1,2,3,4,5]: # 天、周、月、年、全部
-            return '参数丢失', 400 
+            return '参数丢失', 400
         info = {}
 
         if id == 1:   #天
@@ -180,17 +180,17 @@ def incom_count():
             days = 0
             ftime = '%d'  #全部数据以天时统计
         else:
-            return '参数丢失', 400        
+            return '参数丢失', 400
         if days !=0:
             # print(id)
             orders = Order.query.filter(Order.updatetime >= NOW - timedelta(days=days)).all()
         else:
             # orders = Order.query.filter(Order.updatetime >= NOW - timedelta(hours=0.5)).all()
-            orders = Order.query.filter().all()  
+            orders = Order.query.filter().all()
     except Exception as e:
         log(e)
-        return '数据库异常', 500    
-    info['history_date'],info['history_price'] = sort_count([(x.updatetime.strftime(ftime),x.total_price) for x in orders])    
+        return '数据库异常', 500
+    info['history_date'],info['history_price'] = sort_count([(x.updatetime.strftime(ftime),x.total_price) for x in orders])
     return jsonify(info)
 
 @admin.route('/get_smtp', methods=['get'])
@@ -201,8 +201,8 @@ def get_smtp():
         return jsonify(smtp.to_json())
     except Exception as e:
         log(e)
-        return '数据库异常', 500    
-    
+        return '数据库异常', 500
+
 
 @admin.route('/update_smtp', methods=['post'])
 @jwt_required
@@ -216,7 +216,7 @@ def update_smtp():
             Notice.query.filter_by(id =1).update({'config':str(data['config'])})
     except Exception as e:
         log(e)
-        return '数据库异常', 500      
+        return '数据库异常', 500
     # 重定向登录界面
     return '邮箱更新成功', 200
 
@@ -231,14 +231,14 @@ def test_smtp():
         return 'Missing data', 400
     # 调用smtp函数发送邮件
     try:
-        
+
         if mail_test(config=data['config'],message=message,email=email):
             return '邮件已发送', 200
         else:
             return '邮件发送失败', 400
     except Exception as e:
         log(e)
-        return '邮箱配置可能有错误', 400      
+        return '邮箱配置可能有错误', 400
 @admin.route('/get_sms', methods=['get'])
 @jwt_required
 def get_sms():
@@ -247,8 +247,8 @@ def get_sms():
         return jsonify(sms.to_json())
     except Exception as e:
         log(e)
-        return '数据库异常', 500    
-    
+        return '数据库异常', 500
+
 
 @admin.route('/update_sms', methods=['post'])
 @jwt_required
@@ -262,7 +262,7 @@ def update_sms():
             Notice.query.filter_by(name = '短信通知').update({'config':str(data['config'])})
     except Exception as e:
         log(e)
-        return '数据库异常', 500      
+        return '数据库异常', 500
     # 重定向登录界面
     return '邮箱更新成功', 200
 
@@ -284,7 +284,7 @@ def test_sms():
             return '邮件发送失败', 400
     except Exception as e:
         log(e)
-        return '邮箱配置可能有错误', 400    
+        return '邮箱配置可能有错误', 400
 
 # 分类增删改查
 @admin.route('/update_class', methods=['post']) #增、删、改；查询的使用get方式
@@ -317,7 +317,7 @@ def update_class():
                 db.session.add(new_cag)
     except Exception as e:
         log(e)
-        return '数据库异常', 500        
+        return '数据库异常', 500
 
     # 重定向登录界面
     return '修改成功', 200
@@ -329,9 +329,9 @@ def get_class():
         prod_cags = ProdCag.query.filter().all()
     except Exception as e:
         log(e)
-        return '数据库异常', 500        
-    
-    return jsonify([x.to_json() for x in prod_cags])    
+        return '数据库异常', 500
+
+    return jsonify([x.to_json() for x in prod_cags])
 
 @admin.route('/get_shop', methods=['get']) #商品查询
 @jwt_required
@@ -340,8 +340,8 @@ def get_shop():
         prod_shops = ProdInfo.query.filter().all()
     except Exception as e:
         log(e)
-        return '数据库异常', 500        
-    return jsonify([x.admin_json() for x in prod_shops])   
+        return '数据库异常', 500
+    return jsonify([x.admin_json() for x in prod_shops])
 
 @admin.route('/get_shop_edit', methods=['post']) #商品全部信息返回
 @jwt_required
@@ -355,16 +355,16 @@ def get_shop_edit():
         prod_cags = ProdCag.query.filter().all()    #获取分类
     except Exception as e:
         log(e)
-        return '数据库异常', 500            
+        return '数据库异常', 500
     info = prod_shop.admin_edit()
     info['cags'] = [x.to_json()['name'] for x in prod_cags]
     # prod_shop['cags'] = [x.to_json()['name'] for x in prod_cags]
-    return jsonify(info)   
+    return jsonify(info)
 
 @admin.route('/update_shop', methods=['post']) #增、删、改；查询的使用get方式
 @jwt_required
 def update_shop():
-    
+
     id = request.json.get('id', None)
     cag_name = request.json.get('cag_name', None)
     name = request.json.get('name', None)
@@ -399,9 +399,9 @@ def update_shop():
                 db.session.add(new_prod)
     except Exception as e:
         log(e)
-        return '数据库异常', 500      
+        return '数据库异常', 500
 
-    # 
+    #
     return '修改成功', 200
 
 @admin.route('/get_card', methods=['post']) #卡密查询
@@ -413,11 +413,11 @@ def get_card():
         return 'Missing data1', 400
     try:
         cards = Card.query.filter().offset((int(page)-1)*20).limit(20).all()
-        
+
     except Exception as e:
         log(e)
-        return '数据库异常', 500      
-    return jsonify([x.to_json() for x in cards])   
+        return '数据库异常', 500
+    return jsonify([x.to_json() for x in cards])
 
 @admin.route('/get_card_pages', methods=['get']) #卡密查询
 @jwt_required
@@ -431,7 +431,7 @@ def get_card_pages():
             pages = temp    #整除
     except Exception as e:
         log(e)
-        return '数据库异常', 500    
+        return '数据库异常', 500
     return str(pages), 200
 
 @admin.route('/update_card', methods=['post']) #卡密查询
@@ -471,12 +471,12 @@ def update_card():
                     reuse = False
                 db.session.add_all([Card(prod_name,card=x,isused=0,reuse=reuse) for x in tmp_cards])
         # 重定向登录界面
-        return '修改成功', 200          
+        return '修改成功', 200
     except Exception as e:
         log(e)
-        return '数据库异常', 500       
+        return '数据库异常', 500
 
-  
+
 
 
 
@@ -486,9 +486,9 @@ def remove_cards():
     ids = request.json.get('ids', None)
     if not ids:
         return 'Missing Data', 400
-    with db.auto_commit_db():        
-        [Card.query.filter_by(id = x).delete() for x in ids]    
-    return '批量删除', 200    
+    with db.auto_commit_db():
+        [Card.query.filter_by(id = x).delete() for x in ids]
+    return '批量删除', 200
 
 
 @admin.route('/get_orders', methods=['post']) #已售订单信息
@@ -501,8 +501,8 @@ def get_orders():
         orders = Order.query.order_by(Order.id.desc()).offset((int(page)-1)*20).limit(20).all()
     except Exception as e:
         log(e)
-        return '数据库异常', 500      
-    return jsonify([x.admin_json() for x in orders])   
+        return '数据库异常', 500
+    return jsonify([x.admin_json() for x in orders])
 
 @admin.route('/get_tmp_orders', methods=['post']) #已售订单信息
 @jwt_required
@@ -515,8 +515,8 @@ def get_tmp_orders():
         orders = TempOrder.query.order_by(TempOrder.id.desc()).offset((int(page)-1)*20).limit(20).all()
     except Exception as e:
         log(e)
-        return '数据库异常', 500      
-    return jsonify([x.to_json2() for x in orders])   
+        return '数据库异常', 500
+    return jsonify([x.to_json2() for x in orders])
 
 @admin.route('/remove_order', methods=['post']) #删除卡密
 @jwt_required
@@ -532,10 +532,10 @@ def remove_order():
                     db.session.delete(x)
             else:
                 Order.query.filter_by(id = id).delete()
-        return '删除成功', 200    
+        return '删除成功', 200
     except Exception as e:
         log(e)
-        return '数据库异常', 500   
+        return '数据库异常', 500
 
 @admin.route('/get_orders_pages', methods=['get']) #卡密查询
 @jwt_required
@@ -549,7 +549,7 @@ def get_orders_pages():
             pages = temp    #整除
     except Exception as e:
         log(e)
-        return '数据库异常', 500    
+        return '数据库异常', 500
     return str(pages), 200
 
 @admin.route('/get_tmp_orders_pages', methods=['get']) #卡密查询
@@ -564,7 +564,7 @@ def get_tmp_orders_pages():
             pages = temp    #整除
     except Exception as e:
         log(e)
-        return '数据库异常', 500    
+        return '数据库异常', 500
     return str(pages), 200
 @admin.route('/get_pays', methods=['get']) #支付接口
 @jwt_required
@@ -573,8 +573,8 @@ def get_pays():
         pays = Payment.query.filter().all()
     except Exception as e:
         log(e)
-        return '数据库异常', 500      
-    return jsonify([x.all_json() for x in pays])   
+        return '数据库异常', 500
+    return jsonify([x.all_json() for x in pays])
 
 @admin.route('/update_pays', methods=['get','post']) #支付接口get获取详细信息，post升级更新
 @jwt_required
@@ -591,10 +591,10 @@ def update_pays():
             # print(type(data['config']))
             with db.auto_commit_db():
                 Payment.query.filter_by(id = data['id']).update({'icon':data['icon'],'config':str(data['config']),'isactive':data['isactive']})
-            return '修改成功', 200 
+            return '修改成功', 200
     except Exception as e:
         log(e)
-        return '数据库异常', 500      
+        return '数据库异常', 500
 
 
 @admin.route('/get_notice', methods=['get']) #通知接口
@@ -604,8 +604,8 @@ def get_notice():
         notices = Notice.query.filter().order_by(Notice.id).all()
     except Exception as e:
         log(e)
-        return '数据库异常', 500          
-    return jsonify([x.to_json() for x in notices])   
+        return '数据库异常', 500
+    return jsonify([x.to_json() for x in notices])
 
 @admin.route('/update_notice', methods=['post']) #通知接口
 @jwt_required
@@ -624,22 +624,22 @@ def update_notice():
                     Notice.query.filter_by(id = index['id']).update({'config':str(index['config']),'admin_account':index['admin_account'],'admin_switch':index['admin_switch'],'user_switch':index['user_switch']})
     except Exception as e:
         log(e)
-        return '数据库异常', 500        
+        return '数据库异常', 500
 
-    return '修改成功', 200 
+    return '修改成功', 200
 
 
 @admin.route('/get_admin_account', methods=['post']) #管理员
 @jwt_required
 def get_admin_account():
-    return jsonify(AdminUser.query.filter_by(id = 1).first().to_json())   
+    return jsonify(AdminUser.query.filter_by(id = 1).first().to_json())
 
 
 @admin.route('/update_admin_account', methods=['post']) #管理员
 @jwt_required
 def update_admin_account():
     email = request.json.get('email', None)
-    password = request.json.get('password', None) #传入卡密列表   
+    password = request.json.get('password', None) #传入卡密列表
     if not all([email,password]):
         return '参数丢失', 400
     hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -726,7 +726,7 @@ def tg_info():
             return '参数丢失', 400
         with db.auto_commit_db():
             Plugin.query.filter_by(name = 'TG发卡').update({'config':str(data['config']),'about':data['about'],'switch':data['switch']})
-        return '数据更新成功', 200 
+        return '数据更新成功', 200
 
 @admin.route('/theme',methods=['GET','POST'])
 @jwt_required

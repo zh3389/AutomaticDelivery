@@ -28,7 +28,7 @@ def notify_success(out_order_id):
             price = res.price
             num = res.num
             total_price = res.total_price
-            auto = res.auto        
+            auto = res.auto
             with db.auto_commit_db():   # 更新卡密状态
                 TempOrder.query.filter_by(out_order_id = out_order_id).update({'status':True})
 
@@ -66,15 +66,15 @@ def make_order(out_order_id,name,payment,contact,contact_txt,price,num,total_pri
                 # 处理数量订单- 卡密查询，数量大于1，重复卡密：-重复发送；不重复卡密：给出结果或空白
                 result = Card.query.filter_by(prod_name = name,isused = False).first()  #先查询一个，判定是否重复
                 if result:
-                    
+
                     if result.to_json()['reuse']: #判定是否重复使用
                         # 重复使用卡密情况下
                         pre_card = result.to_json()['card']
                         # card = str([pre_card for i in range(nums)])
                         card = (pre_card+',')*nums  #解决5~10W卡密重复行问题0.011s;50w消耗47ms--前端轮询4s一次
                         # 其余相同
-                        
-                        
+
+
                     else:
                         # 不重复卡密情况 - 查询多个结果，给出卡密列表；更新这些卡密的使用状态
                         result = Card.query.filter_by(prod_name = name,isused = False).limit(nums).all()
@@ -89,15 +89,15 @@ def make_order(out_order_id,name,payment,contact,contact_txt,price,num,total_pri
                         # 更新已用卡密状态
                         # 120单测试--55ms；
                         # for y in result:
-                        #     Card.query.filter_by(id = y.to_json()['id']).update({'isused':False})      
-                        # 2. 
+                        #     Card.query.filter_by(id = y.to_json()['id']).update({'isused':False})
+                        # 2.
                         # [Card.query.filter_by(id = y.to_json()['id']).update({'isused':False}) for y in result] #53ms
                         # with db.auto_commit_db():     -- 疑似多单时不生效
                         #     for y in result:
                         #         y.isused = True
                         with db.auto_commit_db():
                             for y in result:
-                                Card.query.filter_by(id = y.to_json()['id']).update({'isused':True})                      
+                                Card.query.filter_by(id = y.to_json()['id']).update({'isused':True})
                         # db.auto_commit_db() #1.9ms--9ms---此步骤在后续commmit时生效
                         # [y.isused=False for y in result]
                 else:
@@ -116,7 +116,7 @@ def make_order(out_order_id,name,payment,contact,contact_txt,price,num,total_pri
             # log('订单创建完毕')
         except Exception as e:
             log(e)
-            return '订单创建失败', 500         
+            return '订单创建失败', 500
 
         ##构造data数据
         data = {}
@@ -135,8 +135,8 @@ def make_order(out_order_id,name,payment,contact,contact_txt,price,num,total_pri
         try:
             task(data)  #为避免奔溃，特别设置
         except Exception as e:
-            log(e)  #代表通知序列任务失败                                
-        
+            log(e)  #代表通知序列任务失败
+
 
 
 # 任务检测【主要】
@@ -147,7 +147,7 @@ def task(data):
         notices = [x.to_json() for x in Notice.query.filter().all()]
     except Exception as e:
         log(e)
-        return '订单创建失败', 500       
+        return '订单创建失败', 500
     # 管理员和用户开关判断
     for i in notices:      #如果是邮箱，外加一个；或者conig内容直接为邮箱内容，传递邮箱参数
         # print(i['name'])
@@ -173,15 +173,15 @@ def send_user(notice_name,config,data):    #通知途径+卡密数据#包含{订
             try:
                 mail_to_user(config,data)   #配置和订单信息
             except Exception as e:
-                log(e)  #邮箱通知失败         
-            
+                log(e)  #邮箱通知失败
+
     else:
         if re.match('^1[34578]\d{9}$',data['contact']):
             try:
                 sms_to_user(config,data)
             except Exception as e:
-                log(e)  #邮箱通知失败                
-            
+                log(e)  #邮箱通知失败
+
     # === 执行具体的函数：比如邮箱或短信通知
 #---管理员
 def send_admin(notice_name,config,admin_account,data):  #通知途径+管理员接收账号+msg信息[data['contact']+data['name']订单名]
@@ -191,37 +191,37 @@ def send_admin(notice_name,config,admin_account,data):  #通知途径+管理员�
         try:
             mail_to_admin(config,admin_account,data)
         except Exception as e:
-            log('邮箱通知失败 ')  #          
-            log(e)  #通知失败           
+            log('邮箱通知失败 ')  #
+            log(e)  #通知失败
     elif notice_name == '短信通知':
         try:
             sms_to_admin(config,admin_account,data)
         except Exception as e:
-            log('短信通知失败 ')  #          
-            log(e)  #通知失败              
+            log('短信通知失败 ')  #
+            log(e)  #通知失败
     elif notice_name == '微信通知':
         try:
             # print('微信通知')
-            wxpush(config,admin_account,data)     
+            wxpush(config,admin_account,data)
         except Exception as e:
-            log('微信通知失败 ')  #          
-            log(e)  #通知失败             
-        
+            log('微信通知失败 ')  #
+            log(e)  #通知失败
+
     elif notice_name == 'TG通知':
         try:
-            post_tg(config,admin_account,data)    
+            post_tg(config,admin_account,data)
         except Exception as e:
-            log('TG通知失败 ')  #          
-            log(e)  #通知失败             
+            log('TG通知失败 ')  #
+            log(e)  #通知失败
     elif notice_name == 'QQ通知':
         try:
-            qqpush(config,admin_account,data)    
+            qqpush(config,admin_account,data)
         except Exception as e:
-            log('QQ通知失败 ')  #          
-            log(e)  #通知失败                 
+            log('QQ通知失败 ')  #
+            log(e)  #通知失败
     else:
         print('接口参数错误')
-        log('接口参数错误')  #通知失败 
+        log('接口参数错误')  #通知失败
 
 
 

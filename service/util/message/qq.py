@@ -14,7 +14,7 @@ def qqpush(config,admin_account,data):
             'msg':content,
             'qq':qq
         }
-        requests.post('https://qmsg.zendee.cn/send/'+key,data=data)        
+        requests.post('https://qmsg.zendee.cn/send/'+key,data=data)
     except:
         print('没有正确的填写格式')
         return None

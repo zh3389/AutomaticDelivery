@@ -37,7 +37,7 @@ def get_config():
         if switch:
             if len(TOKEN) == 46:
                 return TOKEN,about,switch
-    return None    
+    return None
 
 ROUTE, PAYMENT,SUBMIT ,CHECK_PAY, PRICE, TRADE,  = range(6)
 
@@ -74,7 +74,7 @@ def start(update, context):
 
 def buy(update, context):
     query = update.callback_query
-    query.answer()    
+    query.answer()
     # 给出商品列表，下一步给出支付方式、二维码弹出
     # shop_list = ['商品A','商品B','商品C',]  # 现货商品；包含名称、价格、库存、发货模式
     # shop_lists = [{'name':'商品A','price':9.9,'kucun':'充足','auto':'自动'},{'name':'商品B','price':9.9,'kucun':'充足','auto':'自动'},{'name':'商品C','price':9.9,'kucun':'充足','auto':'自动'}]  # 现货商品；包含名称、价格、库存、发货模式
@@ -88,10 +88,10 @@ def buy(update, context):
             card_model = '自动发货'
         shop_list = [InlineKeyboardButton(f"{i['name']}    价格：{str(i['price'])}￥  库存：{str(i['stock'])}  {card_model}", callback_data=str(i['name'])+'#'+str(i['price'])+'#'+str(i['stock']))]
         keyboard.append(shop_list)
-    
+
     if len(keyboard) == 0:
         query.edit_message_text(text="商品都卖完了，请联系管理员补库存 主菜单: /start \n")
-        return ConversationHandler.END        
+        return ConversationHandler.END
     else:
         # 订单处理
         # 消息发送
@@ -104,11 +104,11 @@ def buy(update, context):
 def payment(update, context):
     # 给出支付方式，返回二维码+取消按钮
     query = update.callback_query
-    query.answer()       
+    query.answer()
     call_data = query.data.split('#')
     if call_data[2] == '0':
         query.edit_message_text(text="该商品已缺货，请联系管理员补货: /start \n")
-        return ConversationHandler.END            
+        return ConversationHandler.END
     print(call_data)
     # 商品支付
     context.user_data['name'] = call_data[0] #商品名
@@ -120,10 +120,10 @@ def payment(update, context):
     for i in pays:
         payment_list = [InlineKeyboardButton(f"{i.enable_json()['icon']}", callback_data=str(i.enable_json()['name']))] # InlineKeyboardButton("支付宝", callback_data=str('支付宝'))
         keyboard.append(payment_list)
-    
+
     if len(keyboard) == 0:
         query.edit_message_text(text="暂无支付渠道，请联系管理员开启支付渠道: /start \n")
-        return ConversationHandler.END        
+        return ConversationHandler.END
     else:
         # 订单处理
         # 消息发送
@@ -131,16 +131,16 @@ def payment(update, context):
         query.edit_message_text(
             text="请选择一种付款渠道：\n",
             reply_markup=reply_markup)
-        return SUBMIT    
+        return SUBMIT
 
 def pay(update, context):
     query = update.callback_query
-    query.answer()       
+    query.answer()
     context.user_data['payment'] = query.data #获得支付方式
     context.user_data['contact'] = query.effective_user.id  # 下单CHAT_ID
     context.user_data['contact_txt'] = query.effective_user.username #下单用户名
     context.user_data['out_order_id'] = 'TG_'+str(int(time.time()))+''.join(random.choice(string.ascii_letters + string.digits) for _ in range(14))  #len27
-    
+
     # print(context.user_data)
     # 二维码输出
     #
@@ -161,14 +161,14 @@ def pay(update, context):
         return CHECK_PAY
     else:
         query.edit_message_text(text="获取支付二维码失败 主菜单: /start \n")
-    return ConversationHandler.END            
+    return ConversationHandler.END
 
 def get_pay_url(data):  # name,total_price,payment
     name = data['name']
     total_price= data['price']
     payment = data['payment']
     out_order_id = data['out_order_id']
-    name = name.replace('=','_')  #防止k，v冲突        
+    name = name.replace('=','_')  #防止k，v冲突
     if payment == '支付宝当面付':
         try:
             ali_order = AlipayF2F().create_order(name,out_order_id,total_price)
@@ -193,23 +193,23 @@ def get_pay_url(data):  # name,total_price,payment
                 'hash': '2d63d86e7b405ab34ac28204ba77d6d6'}
                 """
                 return pay_order.json()['url']
-            return None             
+            return None
         except Exception as e:
             print(e)
-            return None               
+            return None
         # print(ali_order)
     elif payment == '虎皮椒支付宝':
-        
+
         try:
             obj = Hupi(payment='alipay')
             pay_order = obj.Pay(trade_order_id=out_order_id,total_fee=total_price,title=name)
         except Exception as e:
             print(e)
-            return None                       
+            return None
         # 参数错误情况下，会失效
         if pay_order.json()['errmsg'] == 'success!':
             return pay_order.json()['url']
-        return None  
+        return None
     elif payment in ['码支付微信','码支付支付宝','码支付QQ']:
         # 参数错误情况下，会失效
         try:
@@ -217,7 +217,7 @@ def get_pay_url(data):  # name,total_price,payment
             # print(qr_url)
         except Exception as e:
             print(e)
-            return None                      
+            return None
         return qr_url
     elif payment in ['PAYJS支付宝','PAYJS微信']:
         # 参数错误情况下，会失效
@@ -225,10 +225,10 @@ def get_pay_url(data):  # name,total_price,payment
             r = Payjs().create_order(name,out_order_id,total_price)
         except Exception as e:
             print(e)
-            return None  
+            return None
         if r and r.json()['return_msg'] == 'SUCCESS':
             return r.json()['code_url'],r.json()['payjs_order_id']
-        return None                    
+        return None
     elif payment in ['微信官方接口']:
         try:
             r = Wechat().create_order(name,out_order_id,total_price)
@@ -236,8 +236,8 @@ def get_pay_url(data):  # name,total_price,payment
             print(e)
             return None
         if r:
-            return r   
-        return None 
+            return r
+        return None
     elif payment in ['易支付']:
         try:
             r = Epay().create_order(name,out_order_id,total_price)
@@ -245,8 +245,8 @@ def get_pay_url(data):  # name,total_price,payment
             print(e)
             return None
         if r:
-            return r   
-        return None           
+            return r
+        return None
     elif payment in ['Mugglepay']:
         try:
             r = Mugglepay().create_order(name,out_order_id,total_price)
@@ -254,10 +254,10 @@ def get_pay_url(data):  # name,total_price,payment
             print(e)
             return None
         if r:
-            return r   
-        return None            
+            return r
+        return None
     else:
-        return None 
+        return None
 
 
 def check_pay(data):
@@ -277,7 +277,7 @@ def check_pay(data):
             res = AlipayF2F().check(out_order_id)
         except Exception as e:
             print(e)
-            return None              
+            return None
         # res = True  #临时测试
         # print(result)
         if res:
@@ -286,35 +286,35 @@ def check_pay(data):
             # make_order(out_order_id,name,payment,contact,contact_txt,price,num,total_price)
             executor.submit(make_order,out_order_id,name,payment,contact,contact_txt,price=total_price,num=1,total_price=total_price)
             # print('提交结果1')
-            # print(time()-start) 
+            # print(time()-start)
             return True
-        return None    
+        return None
     elif payment in ['虎皮椒支付宝','虎皮椒微信']:
         try:
             obj = Hupi()
             result = obj.Check(out_trade_order=out_order_id)
         except Exception as e:
-            print(e)            
+            print(e)
             return None
         #失败订单
         try:
             if result.json()['data']['status'] == "OD":  #OD(支付成功)，WP(待支付),CD(已取消)
                 executor.submit(make_order,out_order_id,name,payment,contact,contact_txt,price,num,total_price)
-                return True             
+                return True
         except :
             return None
-        return None    
-      
+        return None
+
     elif payment in ['码支付微信','码支付支付宝','码支付QQ']:
         result = CodePay().check(out_order_id)
         #失败订单
         try:
             if result['msg'] == "success":  #OD(支付成功)，WP(待支付),CD(已取消)
                 executor.submit(make_order,out_order_id,name,payment,contact,contact_txt,price,num,total_price)
-                return True              
+                return True
         except :
             return None
-        return None        
+        return None
     elif payment in ['PAYJS支付宝','PAYJS微信']:
         payjs_order_id = data['payjs_order_id']
         result = Payjs().check(payjs_order_id)
@@ -322,11 +322,11 @@ def check_pay(data):
         try:
             if result:
                 executor.submit(make_order,out_order_id,name,payment,contact,contact_txt,price,num,total_price)
-                return True             
+                return True
         except :
             return None
 
-        return None     
+        return None
     elif payment in ['微信官方接口']:
         try:
             r = Wechat().check(out_order_id)
@@ -335,7 +335,7 @@ def check_pay(data):
             return None
         if r:
             executor.submit(make_order,out_order_id,name,payment,contact,contact_txt,price,num,total_price)
-            return True    
+            return True
         return None
     elif payment in ['易支付']:
         try:
@@ -345,8 +345,8 @@ def check_pay(data):
             return None
         if r:
             executor.submit(make_order,out_order_id,name,payment,contact,contact_txt,price,num,total_price)
-            return True   
-        return None        
+            return True
+        return None
     elif payment in ['Mugglepay']:
         try:
             r = Mugglepay().check(out_order_id)
@@ -355,8 +355,8 @@ def check_pay(data):
             return None
         if r:
             executor.submit(make_order,out_order_id,name,payment,contact,contact_txt,price,num,total_price)
-            return True  
-        return None            
+            return True
+        return None
 
     else:
         return None
@@ -377,7 +377,7 @@ def make_order(data):   # 主要为订单创建，异步一个管理员通知
     if not (Order.query.filter_by(out_order_id = out_order_id).first()):
         status = True   #订单状态
         # 生成订单 --除了上述内容外，还需要卡密。
-        
+
         result = Card.query.filter_by(prod_name = name,isused = False).first()  #此处可用用0，也可以用false
         if result:
             card = result.to_json()['card']
@@ -402,8 +402,8 @@ def make_order(data):   # 主要为订单创建，异步一个管理员通知
             # log('订单创建完毕')
         except Exception as e:
             print(e)
-            # return '订单创建失败', 500    
-            return None     
+            # return '订单创建失败', 500
+            return None
 
         ##构造data数据
         data = {}
@@ -422,8 +422,8 @@ def make_order(data):   # 主要为订单创建，异步一个管理员通知
         try:
             task(data)  #为避免奔溃，特别设置
         except Exception as e:
-            print(e)  #代表通知序列任务失败                                
-        
+            print(e)  #代表通知序列任务失败
+
 
 
 
@@ -437,7 +437,7 @@ def task(data):
         notices = [x.to_json() for x in Notice.query.filter().all()]
     except Exception as e:
         print(e)
-        return '订单创建失败', 500       
+        return '订单创建失败', 500
     # 管理员和用户开关判断
     for i in notices:      #如果是邮箱，外加一个；或者conig内容直接为邮箱内容，传递邮箱参数
         # print(i['name'])
@@ -454,7 +454,7 @@ def task(data):
 
 def send_tg_msg(chat_id,message):
     bot = telegram.Bot(token=get_config()[0])
-    bot.send_message(chat_id=chat_id,text=message)    
+    bot.send_message(chat_id=chat_id,text=message)
     # === 执行具体的函数：比如邮箱或短信通知
 #---管理员
 def send_admin(notice_name,config,admin_account,data):  #通知途径+管理员接收账号+msg信息[data['contact']+data['name']订单名]
@@ -464,31 +464,31 @@ def send_admin(notice_name,config,admin_account,data):  #通知途径+管理员�
         try:
             mail_to_admin(config,admin_account,data)
         except Exception as e:
-            # log('邮箱通知失败 ')  #          
-            print(e)  #通知失败           
+            # log('邮箱通知失败 ')  #
+            print(e)  #通知失败
     elif notice_name == '短信通知':
         try:
             sms_to_admin(config,admin_account,data)
         except Exception as e:
-            # log('短信通知失败 ')  #          
-            print(e)  #通知失败              
+            # log('短信通知失败 ')  #
+            print(e)  #通知失败
     elif notice_name == '微信通知':
         try:
             # print('微信通知')
-            wxpush(config,admin_account,data)     
+            wxpush(config,admin_account,data)
         except Exception as e:
-            # log('微信通知失败 ')  #          
-            print(e)  #通知失败             
-        
+            # log('微信通知失败 ')  #
+            print(e)  #通知失败
+
     elif notice_name == 'TG通知':
         try:
-            post_tg(config,admin_account,data)    
+            post_tg(config,admin_account,data)
         except Exception as e:
-            # log('TG通知失败 ')  #          
-            print(e)  #通知失败             
+            # log('TG通知失败 ')  #
+            print(e)  #通知失败
     else:
         print('接口参数错误')
-        # log('接口参数错误')  #通知失败 
+        # log('接口参数错误')  #通知失败
 
 
 def check_order(data):
@@ -500,17 +500,17 @@ def check_order(data):
         time.sleep(4)
         # 支付后的效果
         if check_pay(data):
-            break 
+            break
 
 def search_order(update, context):  #done
     query = update.callback_query
-    query.answer()        
+    query.answer()
     chat_id = update.effective_user.id  #用于查询订单
     user_name = update.effective_user.username
     # print(chat_id)  # 472835979
 
     orders = Order.query.filter_by(contact = chat_id).limit(5).all()
-    
+
     # order_txt = [{'name':'shopA','card':'xxxxxxx','date':'2020:12:1'},{'name':'shopB','card':'xxxxxxx','date':'2020:12:1'}]
 
     if len(orders) == 0:
@@ -519,7 +519,7 @@ def search_order(update, context):  #done
         order_info = f'您好{user_name},您最近的{str(len(orders))}个订单内如下：\n============\n'
         for i in orders:
             order_info += f"订单号：{i.check_card()['out_order_id']}\n商品名：{i.check_card()['name']}\n时间：{i.check_card()['updatetime']}\n订单内容：{i.check_card()['card']}\n============\n"
-        
+
         query.edit_message_text(text=order_info)
 
     return ConversationHandler.END
@@ -530,7 +530,7 @@ def about(update, context): #done
     # html_txt = "### 联系我们简介"
     html_txt = get_config()[1]
     query.edit_message_text(text=html_txt,parse_mode='Markdown')
-    return ConversationHandler.END 
+    return ConversationHandler.END
 
 def cancel(update, context):
     update.message.reply_text('期待再次见到你～')
@@ -553,16 +553,16 @@ start_handler = ConversationHandler(
             PAYMENT: [
                 CommandHandler('start', start),
                 CallbackQueryHandler(payment, pattern='.*?'),
-            ],  
+            ],
             SUBMIT: [
                 CommandHandler('start', start),
                 CallbackQueryHandler(pay, pattern='.*?'),
                 CallbackQueryHandler(cancel, pattern='^' + str('取消订单') + '$')
-            ],    
+            ],
             CHECK_PAY: [
                 CommandHandler('start', start),
                 CallbackQueryHandler(payment, pattern='.*?'),
-            ],                                
+            ],
             ConversationHandler.TIMEOUT: [MessageHandler(Filters.all, timeout)],
         },
         fallbacks=[CommandHandler('cancel', cancel)],

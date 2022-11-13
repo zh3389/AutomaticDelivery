@@ -32,7 +32,7 @@ def theme_list():
         cags = ProdCag.query.filter().order_by(ProdCag.sort).all()
     except Exception as e:
         log(e)
-        return '数据库异常', 503    
+        return '数据库异常', 503
     prod_list =[x.to_json() for x in prods]
     cag_list = [x.to_json()['name'] for x in cags]
     tmp_cags = []
@@ -43,13 +43,13 @@ def theme_list():
     for index,i in enumerate(tmp_cags):
         sub_num[i['cag_name']] = index
     for i in prod_list:
-        tmp_cags[sub_num[i['cag_name']]]['shops'].append(i)        
+        tmp_cags[sub_num[i['cag_name']]]['shops'].append(i)
     new_cags = []
     for i in cag_list:
         for x in tmp_cags:
             if x['cag_name'] == i:
                 new_cags.append(x)
-    info['shops'] = new_cags   
+    info['shops'] = new_cags
     info['shops2'] = prod_list
     # 主题
     res = Config.query.filter_by(name = 'theme').first()
@@ -62,7 +62,7 @@ def detail(shop_id):
         prod = ProdInfo.query.filter_by(id = shop_id).first_or_404('Product not exist')
     except Exception as e:
         log(e)
-        return '数据库异常', 503   
+        return '数据库异常', 503
     res = prod.detail_json()
     try:
         if len(res['price_wholesale']) >5:
@@ -105,10 +105,10 @@ def get_order():
         orders = Order.query.filter_by(contact = contact).limit(2).all()
     except Exception as e:
         log(e)
-        return '数据库异常', 503   
+        return '数据库异常', 503
     if orders:
         order = orders[-1].check_card() # {}
-        time_count = datetime.utcnow()+timedelta(hours=8)-datetime.strptime(order['updatetime'],'%Y-%m-%d %H:%M') 
+        time_count = datetime.utcnow()+timedelta(hours=8)-datetime.strptime(order['updatetime'],'%Y-%m-%d %H:%M')
         if time_count.days:
             return 'not found', 200
         else:
@@ -130,7 +130,7 @@ def get_pay_url():  # 传递名称、支付方式、订单号，购买数量，�
         return '暂无该支付接口', 404
     if not all([name,out_order_id,contact,num]):
         return '参数丢失', 404
-    num = int(num) 
+    num = int(num)
     if num < 1:
         return '数量不正确', 404
     if len(out_order_id) != 27:
@@ -154,8 +154,8 @@ def check_pay():
     if TempOrder.query.filter_by(out_order_id = out_order_id,status = True).first():
         return jsonify({'msg':'success'})
     if payment and payment == '支付宝当面付':   # 未知失败原因
-        executor.submit(alipay_check,out_order_id)  # 新增主动查询    
-    return jsonify({'msg':'not paid'})  #支付状态校验            
+        executor.submit(alipay_check,out_order_id)  # 新增主动查询
+    return jsonify({'msg':'not paid'})  #支付状态校验
 
 ## 自动校验
 @base.route('/check_pay_auto', methods=['post']) #检测状态或取消订单
@@ -170,8 +170,8 @@ def check_pay_auto():
     if TempOrder.query.filter_by(out_order_id = out_order_id,status = True).first():
         return jsonify({'msg':'success'})
     if payment and payment == '支付宝当面付':   # 未知失败原因
-        executor.submit(alipay_check,out_order_id)  # 新增主动查询    
-    return jsonify({'msg':'not paid'})  #支付状态校验     
+        executor.submit(alipay_check,out_order_id)  # 新增主动查询
+    return jsonify({'msg':'not paid'})  #支付状态校验
 
 
 @base.route('/get_card', methods=['post']) #已售订单信息--自动查询
@@ -185,11 +185,11 @@ def get_card():
             return jsonify(card.only_card())    #返回卡密和订单时间
     except Exception as e:
         log(e)
-        # time.sleep()      
-        return '订单创建失败', 400        
-   
+        # time.sleep()
+        return '订单创建失败', 400
+
     return '订单丢失', 404
-    
+
 
 @base.route('/get_system', methods=['get'])
 def get_system():
@@ -203,4 +203,3 @@ def get_system():
         return jsonify(info)
     except:
         return '数据库异常', 503
-    

@@ -234,7 +234,7 @@ def notify(name):
                     pass
                 res = Ymq(payment=payment).verify(request.form.to_dict())
                 if res:
-                    executor.submit(notify_success,out_order_id)                                     
+                    executor.submit(notify_success,out_order_id)
     except:
         pass
     return 'success'

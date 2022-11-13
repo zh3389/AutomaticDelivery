@@ -12,7 +12,7 @@ def wxpush(config,admin_account,data):
         'appToken':config['token'],
         'content':content,
         # 'summary':'发卡网消息提示',
-        'contentType':1,    #内容类型 1表示文字  2表示html(只发送body标签内部的数据即可，不包括body标签) 3表示markdown 
+        'contentType':1,    #内容类型 1表示文字  2表示html(只发送body标签内部的数据即可，不包括body标签) 3表示markdown
         'uids':[f"{admin_account}"]
     }
     requests.post('http://wxpusher.zjiecode.com/api/send/message',json=data)

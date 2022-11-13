@@ -37,7 +37,7 @@ def smtp_backup():
         txt += '\n密码:' + tmp['smtp_pwd']
         return txt
     except:
-        return txt        
+        return txt
 
 
 # 消息通知
@@ -51,7 +51,7 @@ def notice_backup():
             txt += '\n'+i['name']+'---管理员账号：'+i['admin_account']+'  管理员开关状态：'+str(i['admin_switch'])
         return txt
     except:
-        return txt        
+        return txt
 
 
 # 网址设置
@@ -65,7 +65,7 @@ def system_backup():
             txt += '\nID：'+str(i['id'])+'---名称：'+i['name']+'---描述：'+i['description']+'---具体内容：'+i['info']
         return txt
     except:
-        return txt        
+        return txt
 
 # 分类设置
 def cag_backup():
@@ -78,7 +78,7 @@ def cag_backup():
             txt += '\n分类名：'+ i['name']+'---描述：'+i['info']+'---排序值：'+str(i['sort'])
         return txt
     except:
-        return txt        
+        return txt
 
 
 # 商品设置
@@ -93,7 +93,7 @@ def shop_backup():
             txt += '\n------商品详细描述：'+i['discription']
         return txt
     except:
-        return txt        
+        return txt
 
 # 卡密信息
 def card_backup():
@@ -110,7 +110,7 @@ def card_backup():
             txt += '\n'+str(i['card'])
         return txt
     except:
-        return txt        
+        return txt
 
 # 订单列表
 def order_backup():
@@ -124,9 +124,9 @@ def order_backup():
             txt += '\n订单时间:'+str(i['updatetime'])+'订单ID：'+ i['out_order_id']+'---【'+i['name']+'】---支付渠道:'+i['payment']+'---联系方式:'+str(i['contact'])+'---购买数量:'+str(i['num'])+'---总价格:'+str(i['total_price'])+'---卡密:'+str(i['card'])
         return txt
     except:
-        return txt     
+        return txt
 #路径设置
-SQL_PATH = os.path.join(os.path.dirname(__file__),'../../public/sql')           
+SQL_PATH = os.path.join(os.path.dirname(__file__),'../../public/sql')
 def order_backup_sql():
 # def order_backup():
     from datetime import datetime
@@ -162,13 +162,13 @@ def update_order():
         try:
             new_orders.append(Order(out_order_id=tmp['out_order_id'],name=tmp['name'],payment=tmp['payment'],contact=tmp['contact'],contact_txt=tmp['contact_txt'],price=tmp['price'],num=tmp['num'],total_price=tmp['total_price'],card=tmp['card'],status=tmp['status'],updatetime=datetime.strptime(tmp['updatetime'], "%Y-%m-%d %H:%M:%S")))
         except Exception as e:
-            print(e)   
+            print(e)
     try:
         with db.auto_commit_db():
             db.session.add_all(new_orders)
         return 'ok'
     except Exception as e:
-        print(e)         
+        print(e)
     return 'ok'
 
 
@@ -196,12 +196,12 @@ def images_backup():
     dst = os.path.join(BACKUP_PATH+'/images')
     copyfile(src,dst)
     # 图片备份
-    
+
 # 数据库备份
 def sql_backup():
     SQL_PATH = os.path.join(os.path.dirname(__file__),'../../../public/sql')
     src = SQL_PATH+'/kamifaka.db'
-    create_dir('sql') 
+    create_dir('sql')
     dst = os.path.join(BACKUP_PATH+'/sql')
     if os.path.exists(src):
         copy(src,dst)
@@ -235,8 +235,8 @@ def main_back():    # 服务器端备份
         f.write(cag_backup()+shop_backup()+card_backup()) #写入系统配置
 
     with open(BACKUP_PATH+'/历史订单信息备份'+backup_time+'.txt','w',encoding='utf-8') as f:
-        f.write(order_backup()) #写入系统配置        
-    
+        f.write(order_backup()) #写入系统配置
+
     # 文件操作
     images_backup()
     # 原始数据库 仅支持sqlite
