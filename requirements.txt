@@ -8,7 +8,7 @@ bcrypt
 gunicorn
 gevent
 pymysql
-flask_limiter
+flask_limiter==1.4
 psycopg2-binary
 # python-telegram-bot
 # qrcode
@@ -16,3 +16,4 @@ weixin-python
 wechat-pay-sdk
 Flask-APScheduler
 stripe
+markupsafe==2.0.1
