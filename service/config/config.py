@@ -43,8 +43,8 @@ def init_db(update=False):
     db.session.add(Card('普通商品演示', 'pan.baidu.com', True, False))
 
     # 系统配置
-    db.session.add(Config('web_name', 'KAMIFAKA', '网站名称', True))
-    db.session.add(Config('web_keyword', '关键词、收录词汇', '网站关键词', True))
+    db.session.add(Config('web_name', '图包网', '网站名称', True))
+    db.session.add(Config('web_keyword', '图包 插画 写真', '网站关键词', True))
     db.session.add(Config('description', '网站描述信息。。。', '网站描述', True))
     db.session.add(Config('web_url', 'http://107.148.243.178:8002', '必填，网站实际地址', True))
     db.session.add(Config('web_bg_url', 'https://cdn.jsdelivr.net/gh/Baiyuetribe/yyycode@dev/colorfull.jpg', '网站背景图片', True))

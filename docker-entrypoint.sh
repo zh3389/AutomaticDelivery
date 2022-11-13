@@ -1,6 +1,6 @@
 #!/bin/sh
 echo '====^_^===='
-echo '欢迎使用佰阅发卡(KAMIFAKA)程序'
+echo '欢迎使用发卡程序'
 
 
 if [ ${DB_TYPE} = 'Mysql' ];then
